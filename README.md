@@ -15,7 +15,7 @@ information in the mode-line in various search modes.
 ## Requirements
 
 * Emacs 24 or higher
-* `cl-lib` 0.3 or higher (you don't need to install `cl-lib` if you use Emacs 24.3 or higher)
+* `cl-lib` 0.5 or higher (you don't need to install `cl-lib` if you use Emacs 24.3 or higher)
 
 
 ## Installation
@@ -99,13 +99,19 @@ Face of to-string of replacement
 #### `anzu-mode-line-update-function`
 
 Function which constructs mode-line string. If you color mode-line string,
-you propertize string by yourself.
+you propertize string by yourself. The function takes 2 integer arguments, current position,
+and total matched. This function is called at searching, inputting replaced word,
+replacing. Global variable `anzu--state` indicates those states(`'search`, `'replace-query`, `replace`).
 
 ```lisp
 (defun my/anzu-update-func (here total)
-  (propertize (format "<%d/%d>" here total)
-              'face '((:foreground "yellow" :weight bold))))
-(setq anzu-mode-line-update-function my/anzu-update-func)
+  (when anzu--state
+    (let ((status (cl-case anzu--state
+                    (search (format "<%d/%d>" here total))
+                    (replace-query (format "(%d Replaces)" total))
+                    (replace (format "<%d/%d>" here total)))))
+      (propertize status 'face 'anzu-mode-line))))
+(setq anzu-mode-line-update-function #'my/anzu-update-func)
 ```
 
 #### `anzu-cons-mode-line-p`(Default is `t`)
@@ -133,7 +139,7 @@ Mode name in `mode-line`. Default is ` Anzu`.
 
 #### `anzu-input-idle-delay`(Default is `0.05`)
 
-Delay second of updating modeline information when you input from-string
+Delay second of updating mode-line information when you input from-string
 
 #### `anzu-regexp-search-commands`
 
@@ -193,7 +199,7 @@ Separator of `to` string.
  '(anzu-replace-to-string-separator " => "))
 ```
 
-[melpa-link]: http://melpa.org/#/anzu
-[melpa-stable-link]: http://stable.melpa.org/#/anzu
-[melpa-badge]: http://melpa.org/packages/anzu-badge.svg
-[melpa-stable-badge]: http://stable.melpa.org/packages/anzu-badge.svg
+[melpa-link]: https://melpa.org/#/anzu
+[melpa-stable-link]: https://stable.melpa.org/#/anzu
+[melpa-badge]: https://melpa.org/packages/anzu-badge.svg
+[melpa-stable-badge]: https://stable.melpa.org/packages/anzu-badge.svg
